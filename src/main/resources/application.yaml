@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: lianai-agent
+  profiles:
+    active: local
