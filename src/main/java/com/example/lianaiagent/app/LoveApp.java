@@ -8,8 +8,12 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.content.Media;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -51,6 +55,36 @@ public class LoveApp {
 
         String content = response.getResult().getOutput().getText();
         log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 图片理解对话。图片只参与当前请求；JDBC ChatMemory 1.1.2 不会持久化图片二进制。
+     */
+    public String doChatWithImage(String message,
+                                  String chatId,
+                                  byte[] imageData,
+                                  String contentType) {
+        Assert.hasText(message, "message 不能为空");
+        Assert.hasText(chatId, "chatId 不能为空");
+        Assert.isTrue(imageData != null && imageData.length > 0, "图片不能为空");
+        Assert.hasText(contentType, "图片 Content-Type 不能为空");
+
+        MimeType mimeType = MimeTypeUtils.parseMimeType(contentType);
+        Assert.isTrue("image".equalsIgnoreCase(mimeType.getType()), "仅支持图片文件");
+
+        Media image = Media.builder()
+                .mimeType(mimeType)
+                .data(imageData)
+                .build();
+
+        String content = this.chatClient.prompt()
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))
+                .user(user -> user.text(message).media(image))
+                .call()
+                .content();
+
+        log.info("multimodal content: {}", content);
         return content;
     }
 
