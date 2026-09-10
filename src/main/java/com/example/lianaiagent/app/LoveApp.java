@@ -4,11 +4,14 @@ import com.example.lianaiagent.advisor.MyLoggerAdvisor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.content.Media;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
@@ -26,6 +29,9 @@ public class LoveApp {
     private final ChatClient chatClient;
 
     private final PromptTemplate loveReportPromptTemplate;
+
+    @Autowired
+    private VectorStore loveAppVectorStore;
 
     public LoveApp(ChatModel dashscopeChatModel,
                    ChatMemory chatMemory,
@@ -109,5 +115,24 @@ public class LoveApp {
 
         log.info("loveReport: {}", loveReport);
         return loveReport;
+    }
+
+    /**
+     * Rag
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithRag(String message, String chatId){
+        ChatResponse response = this.chatClient.prompt()
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(QuestionAnswerAdvisor.builder(loveAppVectorStore).build())
+                .user(message)
+                .call()
+                .chatResponse();
+
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
     }
 }
