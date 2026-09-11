@@ -1,5 +1,6 @@
 package com.example.lianaiagent.app;
 
+import com.alibaba.cloud.ai.graph.agent.interceptor.todolist.TodoListInterceptor;
 import com.example.lianaiagent.advisor.MyLoggerAdvisor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -129,6 +130,7 @@ public class LoveApp {
      * @param chatId
      * @return
      */
+    // TODO: 实现文档切分入库，目前使用的内存
     public String doChatWithRag(String message, String chatId){
         ChatResponse response = this.chatClient.prompt()
                 .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 /**
- * simple vector store config
+ * 向量数据库配置
  */
 @Configuration
 public class LoveAppVectorStoreConfig {
@@ -19,12 +19,17 @@ public class LoveAppVectorStoreConfig {
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;
 
+    @Resource
+    private MyTokenTextSplitter myTokenTextSplitter;
+
     @Bean
     VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel).build();
         // 加载文档
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
-        simpleVectorStore.doAdd(documents);
+        // 自定义切分
+        List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documents);
+        simpleVectorStore.doAdd(splitDocuments);
         return simpleVectorStore;
     }
 }
