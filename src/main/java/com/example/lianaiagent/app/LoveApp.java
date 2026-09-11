@@ -4,6 +4,7 @@ import com.example.lianaiagent.advisor.MyLoggerAdvisor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
@@ -12,6 +13,7 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
@@ -30,14 +32,18 @@ public class LoveApp {
 
     private final PromptTemplate loveReportPromptTemplate;
 
+    private final Advisor loveAppRagCloudAdvisor;
+
     @Autowired
     private VectorStore loveAppVectorStore;
 
     public LoveApp(ChatModel dashscopeChatModel,
                    ChatMemory chatMemory,
+                   @Qualifier("loveAppRagCloudAdvisor") Advisor loveAppRagCloudAdvisor,
                    @Value("classpath:/prompts/love-system.st") Resource systemPrompt,
                    @Value("classpath:/prompts/love-report.st") Resource loveReportPrompt) {
         this.loveReportPromptTemplate = new PromptTemplate(loveReportPrompt);
+        this.loveAppRagCloudAdvisor = loveAppRagCloudAdvisor;
 
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(systemPrompt)
@@ -133,6 +139,19 @@ public class LoveApp {
 
         String content = response.getResult().getOutput().getText();
         log.info("content: {}", content);
+        return content;
+    }
+
+    /** 使用阿里云百炼云知识库进行检索增强对话。 */
+    public String doChatWithCloudRag(String message, String chatId) {
+        String content = this.chatClient.prompt()
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(loveAppRagCloudAdvisor)
+                .user(message)
+                .call()
+                .content();
+
+        log.info("cloud rag content: {}", content);
         return content;
     }
 }

@@ -24,6 +24,12 @@ public class LoveController {
         this.loveApp = loveApp;
     }
 
+    @PostMapping("/chat/rag/cloud")
+    public ResponseEntity<String> chatWithCloudRag(@RequestParam String message,
+                                                   @RequestParam String chatId) {
+        return ResponseEntity.ok(loveApp.doChatWithCloudRag(message, chatId));
+    }
+
     @PostMapping(value = "/chat/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> chatWithImage(@RequestParam String message,
                                                 @RequestParam String chatId,

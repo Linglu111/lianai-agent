@@ -3,3 +3,15 @@ spring:
     name: lianai-agent
   profiles:
     active: local
+  ai:
+    dashscope:
+      # 子业务空间的知识库需要设置；默认业务空间留空即可。
+      workspace-id: ${AI_DASHSCOPE_WORKSPACE_ID:}
+
+love-app:
+  rag:
+    cloud:
+      # 百炼控制台中的知识库名称（不是应用名称）。
+      index-name: ${BAILIAN_KNOWLEDGE_INDEX_NAME:恋爱大师}
+      rerank-top-n: 5
+      rerank-min-score: 0.01
