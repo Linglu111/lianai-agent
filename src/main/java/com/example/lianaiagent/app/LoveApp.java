@@ -2,6 +2,8 @@ package com.example.lianaiagent.app;
 
 import com.alibaba.cloud.ai.graph.agent.interceptor.todolist.TodoListInterceptor;
 import com.example.lianaiagent.advisor.MyLoggerAdvisor;
+import com.example.lianaiagent.rag.LoveAppRagCustomAdvisorFactory;
+import com.example.lianaiagent.rag.QueryRewriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -37,6 +39,9 @@ public class LoveApp {
 
     @Autowired
     private VectorStore loveAppVectorStore;
+
+    @Autowired
+    private QueryRewriter queryRewriter;
 
     public LoveApp(ChatModel dashscopeChatModel,
                    ChatMemory chatMemory,
@@ -132,15 +137,36 @@ public class LoveApp {
      */
     // TODO: 实现文档切分入库，目前使用的内存
     public String doChatWithRag(String message, String chatId){
+
+        // 使用查询重写
+        String rewrittenQuery = queryRewriter.doQueryRewriter(message);
+
         ChatResponse response = this.chatClient.prompt()
                 .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))
                 .advisors(QuestionAnswerAdvisor.builder(loveAppVectorStore).build())
-                .user(message)
+                .user(rewrittenQuery)
                 .call()
                 .chatResponse();
 
         String content = response.getResult().getOutput().getText();
         log.info("content: {}", content);
+        return content;
+    }
+
+    /** 根据单身、恋爱、已婚状态过滤知识库后进行 RAG 对话。 */
+    public String doChatWithRag(String message, String chatId, String status) {
+        String rewrittenQuery = queryRewriter.doQueryRewriter(message);
+        Advisor ragAdvisor = LoveAppRagCustomAdvisorFactory
+                .createLoveAppRagCustomAdvisor(loveAppVectorStore, status);
+
+        String content = this.chatClient.prompt()
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(ragAdvisor)
+                .user(rewrittenQuery)
+                .call()
+                .content();
+
+        log.info("custom rag content: {}", content);
         return content;
     }
 

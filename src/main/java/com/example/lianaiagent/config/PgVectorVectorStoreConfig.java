@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * pgvector 向量存储配置
  */
-@Configuration
+//@Configuration
 public class PgVectorVectorStoreConfig {
 
     @Bean
