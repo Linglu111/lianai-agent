@@ -34,3 +34,6 @@ build/
 
 # 配置
 /src/main/resources/application-local.yaml
+
+tmp/
+src/main/java/com/example/lianaiagent/constant/

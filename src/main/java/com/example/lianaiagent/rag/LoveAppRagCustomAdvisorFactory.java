@@ -32,6 +32,8 @@ public final class LoveAppRagCustomAdvisorFactory {
 
         return RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(documentRetriever)
+                // 自定义查询增强器
+                .queryAugmenter(LoveAppContextualQueryAugmenterFactory.createInstance())
                 .build();
     }
 }

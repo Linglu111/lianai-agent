@@ -14,6 +14,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.content.Media;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,10 +36,11 @@ public class LoveApp {
 
     private final PromptTemplate loveReportPromptTemplate;
 
-    private final Advisor loveAppRagCloudAdvisor;
-
     @Autowired
     private VectorStore loveAppVectorStore;
+
+    @Autowired
+    private ToolCallback[] allTools;
 
     @Autowired
     private QueryRewriter queryRewriter;
@@ -49,7 +51,6 @@ public class LoveApp {
                    @Value("classpath:/prompts/love-system.st") Resource systemPrompt,
                    @Value("classpath:/prompts/love-report.st") Resource loveReportPrompt) {
         this.loveReportPromptTemplate = new PromptTemplate(loveReportPrompt);
-        this.loveAppRagCloudAdvisor = loveAppRagCloudAdvisor;
 
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(systemPrompt)
@@ -170,16 +171,17 @@ public class LoveApp {
         return content;
     }
 
-    /** 使用阿里云百炼云知识库进行检索增强对话。 */
-    public String doChatWithCloudRag(String message, String chatId) {
-        String content = this.chatClient.prompt()
+    public String doChatWithTools(String message, String chatId) {
+        ChatResponse response = chatClient.prompt()
                 .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))
-                .advisors(loveAppRagCloudAdvisor)
+                .advisors(new MyLoggerAdvisor())
                 .user(message)
+                .toolCallbacks(allTools)
                 .call()
-                .content();
+                .chatResponse();
 
-        log.info("cloud rag content: {}", content);
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
         return content;
     }
 }
