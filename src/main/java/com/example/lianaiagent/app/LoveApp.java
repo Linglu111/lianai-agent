@@ -15,6 +15,7 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -177,6 +178,29 @@ public class LoveApp {
                 .advisors(new MyLoggerAdvisor())
                 .user(message)
                 .toolCallbacks(allTools)
+                .call()
+                .chatResponse();
+
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    @Autowired
+    private ToolCallbackProvider toolCallbackProvider;
+
+    /**
+     * MCP
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithMcp(String message, String chatId) {
+        ChatResponse response = chatClient.prompt()
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(new MyLoggerAdvisor())
+                .user(message)
+                .toolCallbacks(toolCallbackProvider)
                 .call()
                 .chatResponse();
 
