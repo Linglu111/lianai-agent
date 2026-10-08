@@ -1,0 +1,10 @@
+spring:
+  ai:
+    mcp:
+      server:
+        name: lianai-image-search-mcp-server
+        version: 0.0.1
+        type: SYNC
+        instructions: "提供图片搜索能力的 MCP 服务端"
+        stdio: false
+        protocol: streamable

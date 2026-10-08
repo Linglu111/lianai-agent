@@ -28,11 +28,20 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <!-- Spring AI 2.0.x 对应 Spring Boot 4.1.x，与本模块 parent 保持一致 -->
+        <spring-ai.version>2.0.1</spring-ai.version>
     </properties>
     <dependencies>
+        <!-- WebMVC（Servlet）运行环境：MCP 的 SSE / Streamable-HTTP 传输都基于 spring-webmvc -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- Spring AI MCP 服务端（WebMVC 传输，SSE + 可选 Streamable-HTTP） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+            <version>${spring-ai.version}</version>
         </dependency>
         <!--  Hutool      -->
         <dependency>
