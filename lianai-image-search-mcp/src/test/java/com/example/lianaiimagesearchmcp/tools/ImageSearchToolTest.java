@@ -3,7 +3,6 @@ package com.example.lianaiimagesearchmcp.tools;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * 里面才有 pexels.api-key）。缺 application-local.yaml 时 key 会退化为环境变量/空串，测试仍可运行。
  */
 @SpringBootTest
-@ActiveProfiles({"stdio", "local"})
 class ImageSearchToolTest {
     @Resource
     private ImageSearchTool imageSearchTool;

@@ -5,7 +5,6 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,12 +14,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ImageSearchTool {
-    /**
-     * Pexels API Key：来自 application-local.yaml（需 local profile 激活）或环境变量 PEXELS_API_KEY。
-     * 冒号后面必须留默认值，否则解析不到 key 时整个 ApplicationContext 都会启动失败。
-     */
-    @Value("${pexels.api-key:}")
-    private String API_KEY;
+
+    private String API_KEY = "F6bw2FV143QtgOQ5wKqsY5faRxEJYwI6LiD4y4ZRPMZcLtLBELCvjhmn";
 
     private static final String API_URL = "https://api.pexels.com/v1/search";
 
